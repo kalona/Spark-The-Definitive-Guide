@@ -1,12 +1,22 @@
-df = spark.read.format("json").load("/data/flight-data/json/2015-summary.json")
+# +
+#%% create sparksession
+from pyspark.sql import SparkSession
+
+spark = SparkSession \
+    .builder \
+    .appName("Pysparkexample") \
+    .getOrCreate()
+# -
+
+df = spark.read.format("json").load("data/flight-data/json/2015-summary.json")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
-spark.read.format("json").load("/data/flight-data/json/2015-summary.json").schema
+spark.read.format("json").load("data/flight-data/json/2015-summary.json").schema
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
@@ -16,41 +26,41 @@ myManualSchema = StructType([
   StructField("count", LongType(), False, metadata={"hello":"world"})
 ])
 df = spark.read.format("json").schema(myManualSchema)\
-  .load("/data/flight-data/json/2015-summary.json")
+  .load("data/flight-data/json/2015-summary.json")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql.functions import col, column
 col("someColumnName")
-column("someColumnName")
+column("someColumnName1")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql.functions import expr
 expr("(((someCol + 5) * 200) - 6) < otherCol")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql import Row
 myRow = Row("Hello", None, 1, False)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 myRow[0]
 myRow[2]
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
-df = spark.read.format("json").load("/data/flight-data/json/2015-summary.json")
+df = spark.read.format("json").load("data/flight-data/json/2015-summary.json")
 df.createOrReplaceTempView("dfTable")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql import Row
 from pyspark.sql.types import StructField, StructType, StringType, LongType
@@ -64,43 +74,51 @@ myDf = spark.createDataFrame([myRow], myManualSchema)
 myDf.show()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.select("DEST_COUNTRY_NAME").show(2)
 
 
-# COMMAND ----------
+# %%sparksql
+SELECT DEST_COUNTRY_NAME FROM dfTable LIMIT 2
+
+#%% COMMAND ----------
 
 df.select("DEST_COUNTRY_NAME", "ORIGIN_COUNTRY_NAME").show(2)
 
 
-# COMMAND ----------
+# %%sparksql
+SELECT DEST_COUNTRY_NAME, ORIGIN_COUNTRY_NAME FROM dfTable LIMIT 2
+
+#%% COMMAND ----------
 
 from pyspark.sql.functions import expr, col, column
 df.select(
     expr("DEST_COUNTRY_NAME"),
     col("DEST_COUNTRY_NAME"),
-    column("DEST_COUNTRY_NAME"))\
+    column('DEST_COUNTRY_NAME'))\
   .show(2)
 
 
-# COMMAND ----------
+col
+
+#%% COMMAND ----------
 
 df.select(expr("DEST_COUNTRY_NAME AS destination")).show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.select(expr("DEST_COUNTRY_NAME as destination").alias("DEST_COUNTRY_NAME"))\
   .show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.selectExpr("DEST_COUNTRY_NAME as newColumnName", "DEST_COUNTRY_NAME").show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.selectExpr(
   "*", # all original columns
@@ -108,41 +126,44 @@ df.selectExpr(
   .show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.selectExpr("avg(count)", "count(distinct(DEST_COUNTRY_NAME))").show(2)
 
+#%%
 
-# COMMAND ----------
+df.selectExpr("*").show(3)
+
+#%% COMMAND ----------
 
 from pyspark.sql.functions import lit
-df.select(expr("*"), lit(1).alias("One")).show(2)
+df.select(expr("*"), lit(1).alias("Ones")).show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.withColumn("numberOne", lit(1)).show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.withColumn("withinCountry", expr("ORIGIN_COUNTRY_NAME == DEST_COUNTRY_NAME"))\
   .show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.withColumnRenamed("DEST_COUNTRY_NAME", "dest").columns
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 dfWithLongColName = df.withColumn(
     "This Long Column-Name",
     expr("ORIGIN_COUNTRY_NAME"))
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 dfWithLongColName.selectExpr(
     "`This Long Column-Name`",
@@ -150,28 +171,28 @@ dfWithLongColName.selectExpr(
   .show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 dfWithLongColName.select(expr("`This Long Column-Name`")).columns
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.where(col("count") < 2).where(col("ORIGIN_COUNTRY_NAME") != "Croatia")\
   .show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.select("ORIGIN_COUNTRY_NAME", "DEST_COUNTRY_NAME").distinct().count()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.select("ORIGIN_COUNTRY_NAME").distinct().count()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 seed = 5
 withReplacement = False
@@ -179,13 +200,13 @@ fraction = 0.5
 df.sample(withReplacement, fraction, seed).count()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 dataFrames = df.randomSplit([0.25, 0.75], seed)
 dataFrames[0].count() > dataFrames[1].count() # False
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql import Row
 schema = df.schema
@@ -197,7 +218,7 @@ parallelizedRows = spark.sparkContext.parallelize(newRows)
 newDF = spark.createDataFrame(parallelizedRows, schema)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.union(newDF)\
   .where("count = 1")\
@@ -205,62 +226,62 @@ df.union(newDF)\
   .show()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.sort("count").show(5)
 df.orderBy("count", "DEST_COUNTRY_NAME").show(5)
 df.orderBy(col("count"), col("DEST_COUNTRY_NAME")).show(5)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 from pyspark.sql.functions import desc, asc
 df.orderBy(expr("count desc")).show(2)
 df.orderBy(col("count").desc(), col("DEST_COUNTRY_NAME").asc()).show(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 spark.read.format("json").load("/data/flight-data/json/*-summary.json")\
   .sortWithinPartitions("count")
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.limit(5).show()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.orderBy(expr("count desc")).limit(6).show()
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.rdd.getNumPartitions() # 1
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.repartition(5)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.repartition(col("DEST_COUNTRY_NAME"))
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.repartition(5, col("DEST_COUNTRY_NAME"))
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 df.repartition(5, col("DEST_COUNTRY_NAME")).coalesce(2)
 
 
-# COMMAND ----------
+#%% COMMAND ----------
 
 collectDF = df.limit(10)
 collectDF.take(5) # take works with an Integer count
@@ -269,5 +290,14 @@ collectDF.show(5, False)
 collectDF.collect()
 
 
-# COMMAND ----------
+# !pip install sparksql-magic
 
+spark.sql("select * from dfTable").show(3)
+
+# %load_ext sparksql_magic
+
+#%% COMMAND ----------
+
+
+# %%sparksql
+select * from dfTable limit 10

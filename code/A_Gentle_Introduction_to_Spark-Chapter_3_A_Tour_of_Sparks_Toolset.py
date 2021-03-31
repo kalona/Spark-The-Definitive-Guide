@@ -1,7 +1,12 @@
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.master("local[*]").getOrCreate()
+
+
 staticDataFrame = spark.read.format("csv")\
   .option("header", "true")\
   .option("inferSchema", "true")\
-  .load("/data/retail-data/by-day/*.csv")
+  .load("data/retail-data/by-day/*.csv")
 
 staticDataFrame.createOrReplaceTempView("retail_data")
 staticSchema = staticDataFrame.schema

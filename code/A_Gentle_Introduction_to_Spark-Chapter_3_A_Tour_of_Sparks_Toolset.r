@@ -1,8 +1,11 @@
 library(SparkR)
-sparkDF <- read.df("/data/flight-data/csv/2015-summary.csv",
+# sparkR.session()
+sparkR.session(master = "local[*]", sparkConfig = list(spark.driver.memory = "2g"))
+
+
+sparkDF <- read.df("../data/flight-data/csv/2015-summary.csv",
          source = "csv", header="true", inferSchema = "true")
 take(sparkDF, 5)
-
 
 # COMMAND ----------
 

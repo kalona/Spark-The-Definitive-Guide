@@ -1,3 +1,7 @@
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.master("local[*]").getOrCreate()
+
 myRange = spark.range(1000).toDF("number")
 
 
@@ -12,7 +16,7 @@ flightData2015 = spark\
   .read\
   .option("inferSchema", "true")\
   .option("header", "true")\
-  .csv("/data/flight-data/csv/2015-summary.csv")
+  .csv("data/flight-data/csv/2015-summary.csv")
 
 # COMMAND ----------
 
