@@ -1,16 +1,12 @@
 from pyspark.sql import SparkSession
 
-spark = SparkSession.builder.master("local[*]").getOrCreate()
+# spark = SparkSession.builder.master("local[*]").getOrCreate()
 
-myRange = spark.range(1000).toDF("number")
+spark = SparkSession.builder.getOrCreate()
 
-file_path = "C:\home_work\local_github\Spark-The-Definitive-Guide\data\/flight-data\csv\/2015" \
-            "-summary.csv"
-# file_path = "/C:/home_work/local_github/Spark-The-Definitive-Guide/code/data/flight-data/csv/2015-summary.csv"
+file_path = "C:\home_work\local_github\Spark-The-Definitive-Guide\data\/flight-data\csv\/2015-summary.csv"
 
 # COMMAND ----------
-
-divisBy2 = myRange.where("number % 2 = 0")
 
 
 # COMMAND ----------
@@ -19,8 +15,7 @@ flightData2015 = spark\
   .read\
   .option("inferSchema", "true")\
   .option("header", "true")\
-.csv(file_path)
-  # .csv("data/flight-data/csv/2015-summary.csv")
+  .csv("./data/flight-data/csv/2015-summary.csv")
 
 # COMMAND ----------
 
@@ -45,9 +40,9 @@ dataFrameWay.explain()
 
 # COMMAND ----------
 
-from pyspark.sql.functions import max
-
-flightData2015.select(max("count")).take(1)
+from pyspark.sql.functions import max, col
+#
+flightData2015.select(max(col("count"))).show(1)
 
 
 # COMMAND ----------
