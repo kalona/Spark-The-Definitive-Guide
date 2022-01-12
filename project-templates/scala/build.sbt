@@ -1,12 +1,14 @@
 // Package Information
 
-name := "example" // change to project name
+name := "scala" // change to project name
 organization := "com.databricks" // change to your org
 version := "0.1-SNAPSHOT"
-scalaVersion := "2.11.8"
+//scalaVersion := "2.11.8"
+scalaVersion := "2.12.12"
 
 // Spark Information
-val sparkVersion = "2.1.0"
+//val sparkVersion = "2.1.0"
+val sparkVersion = "2.4.8"
 
 // allows us to include spark packages
 resolvers += "bintray-spark-packages" at
